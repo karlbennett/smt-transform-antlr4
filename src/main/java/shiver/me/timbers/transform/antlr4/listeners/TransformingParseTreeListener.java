@@ -16,8 +16,6 @@ import shiver.me.timbers.transform.Transformation;
 import shiver.me.timbers.transform.Transformations;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import static shiver.me.timbers.asserts.Asserts.argumentIsNullMessage;
 import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
@@ -36,8 +34,6 @@ public class TransformingParseTreeListener implements ParseTreeListener {
     private final Transformations transformations;
     private Transformations parentRuleTransformations;
     private final TransformableString transformableString;
-
-    private final Set<String> transformedTokens;
 
     public TransformingParseTreeListener(Recognizer recognizer, Transformations transformations,
                                          TransformableString transformableString) {
@@ -68,8 +64,6 @@ public class TransformingParseTreeListener implements ParseTreeListener {
         this.transformations = transformations;
         this.parentRuleTransformations = parentRuleTransformations;
         this.recognizer = recognizer;
-
-        this.transformedTokens = new HashSet<String>();
     }
 
     @Override
@@ -103,8 +97,6 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
         log.debug("Rule visited for \"{}\".", token.getText());
 
-        transformToken(transformations, token);
-
         transformRule(transformations, context, token);
     }
 
@@ -130,7 +122,7 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
     private void transformToken(Transformations transformations, Token token) {
 
-        if (isValidTokenType(token) && tokenHasNotBeenPrinted(token)) {
+        if (isValidTokenType(token)) {
 
             final String tokenName = getTokenName(token.getType());
 
@@ -139,24 +131,12 @@ public class TransformingParseTreeListener implements ParseTreeListener {
             log.debug("\"{}\" transformation found for token \"{}\".", transformation.getName(), tokenName);
 
             transformableString.transformSubstring(transformation, token.getStartIndex(), token.getStopIndex());
-
-            registerTokenAsPrinted(token);
         }
     }
 
     private boolean isValidTokenType(Token token) {
 
         return 0 <= token.getType();
-    }
-
-    private boolean tokenHasNotBeenPrinted(Token token) {
-
-        return !transformedTokens.contains(token.toString());
-    }
-
-    private void registerTokenAsPrinted(Token token) {
-
-        transformedTokens.add(token.toString());
     }
 
     private String getTokenName(int type) {

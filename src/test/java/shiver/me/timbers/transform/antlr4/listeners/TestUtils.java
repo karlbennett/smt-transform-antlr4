@@ -23,6 +23,7 @@ public final class TestUtils {
 
     public static final String TEST_RULE_NAME_ONE = "test rule one";
     public static final String TEST_RULE_NAME_TWO = "test rule two";
+    public static final int TEST_RULE_TYPE_TWO = 1;
 
     public static Recognizer mockRecognizer() {
 
@@ -101,6 +102,17 @@ public final class TestUtils {
         final Token token = mockToken(tokenName, tokenType);
 
         final ParserRuleContext context = mock(ParserRuleContext.class);
+        when(context.getStart()).thenReturn(token);
+
+        return context;
+    }
+
+    public static ParserRuleContext mockParserRuleContext(int rule, String tokenName, int tokenType) {
+
+        final Token token = mockToken(tokenName, tokenType);
+
+        final ParserRuleContext context = mock(ParserRuleContext.class);
+        when(context.getRuleIndex()).thenReturn(rule);
         when(context.getStart()).thenReturn(token);
 
         return context;

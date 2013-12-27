@@ -17,6 +17,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_NAME_ONE;
+import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_NAME_TWO;
+import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_TYPE_TWO;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_TOKEN_NAME_ONE;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_TOKEN_NAME_TWO;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_TOKEN_TYPE_TWO;
@@ -33,7 +35,6 @@ public class TransformingParseTreeListenerTest {
     private static final String TEST_STRING = "A test string with lots of text.";
     private static final int CALLED_ONCE = 1;
     private static final int CALLED_TWICE = 2;
-    private static final int CALLED_THRICE = 3;
     private static final int CALLED_FOUR_TIMES = 4;
 
     private Recognizer recognizer;
@@ -134,11 +135,11 @@ public class TransformingParseTreeListenerTest {
         listener.visitTerminal(mockTerminalNodeWithDefaultToken());
         listener.visitTerminal(mockTerminalNodeWithDefaultToken());
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
+        verifyTransforamations(CALLED_TWICE, TEST_TOKEN_NAME_ONE);
 
         verifyParentTransforamations(CALLED_TWICE, TEST_RULE_NAME_ONE);
 
-        verifyTransformableString(CALLED_THRICE);
+        verifyTransformableString(CALLED_FOUR_TIMES);
 
         verifyNoMoreDependencyInteractions();
     }
@@ -185,9 +186,9 @@ public class TransformingParseTreeListenerTest {
         listener.visitErrorNode(mockErrorNodeWithDefaultToken());
         listener.visitErrorNode(mockErrorNodeWithDefaultToken());
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
+        verifyTransforamations(CALLED_TWICE, TEST_TOKEN_NAME_ONE);
 
-        verifyTransformableString(CALLED_ONCE);
+        verifyTransformableString(CALLED_TWICE);
 
         verifyNoMoreDependencyInteractions();
     }
@@ -218,10 +219,9 @@ public class TransformingParseTreeListenerTest {
 
         createListener().enterEveryRule(mockParserRuleContextWithDefaultToken());
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
         verifyTransforamations(CALLED_ONCE, TEST_RULE_NAME_ONE);
 
-        verifyTransformableString(CALLED_TWICE);
+        verifyTransformableString(CALLED_ONCE);
 
         verifyNoMoreDependencyInteractions();
     }
@@ -233,10 +233,9 @@ public class TransformingParseTreeListenerTest {
         listener.enterEveryRule(mockParserRuleContextWithDefaultToken());
         listener.enterEveryRule(mockParserRuleContextWithDefaultToken());
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
         verifyTransforamations(CALLED_TWICE, TEST_RULE_NAME_ONE);
 
-        verifyTransformableString(CALLED_THRICE);
+        verifyTransformableString(CALLED_TWICE);
 
         verifyNoMoreDependencyInteractions();
     }
@@ -248,11 +247,24 @@ public class TransformingParseTreeListenerTest {
         listener.enterEveryRule(mockParserRuleContextWithDefaultToken());
         listener.enterEveryRule(mockParserRuleContext(TEST_TOKEN_NAME_TWO, TEST_TOKEN_TYPE_TWO));
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_TWO);
         verifyTransforamations(CALLED_TWICE, TEST_RULE_NAME_ONE);
 
-        verifyTransformableString(CALLED_FOUR_TIMES);
+        verifyTransformableString(CALLED_TWICE);
+
+        verifyNoMoreDependencyInteractions();
+    }
+
+    @Test
+    public void testEnterEveryRuleTwiceWithDifferentRules() {
+
+        final TransformingParseTreeListener listener = createListener();
+        listener.enterEveryRule(mockParserRuleContextWithDefaultToken());
+        listener.enterEveryRule(mockParserRuleContext(TEST_RULE_TYPE_TWO, TEST_TOKEN_NAME_TWO, TEST_TOKEN_TYPE_TWO));
+
+        verifyTransforamations(CALLED_ONCE, TEST_RULE_NAME_ONE);
+        verifyTransforamations(CALLED_ONCE, TEST_RULE_NAME_TWO);
+
+        verifyTransformableString(CALLED_TWICE);
 
         verifyNoMoreDependencyInteractions();
     }
