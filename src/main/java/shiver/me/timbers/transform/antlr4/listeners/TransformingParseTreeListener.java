@@ -81,7 +81,7 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
         log.debug("\"{}\" terminal node visited.", token.getText());
 
-        transformToken(transformations, token);
+        transformToken(transformations, context, token);
 
         transformRule(parentRuleTransformations, context, token);
     }
@@ -89,11 +89,13 @@ public class TransformingParseTreeListener implements ParseTreeListener {
     @Override
     public void visitErrorNode(@NotNull ErrorNode node) {
 
+        final RuleContext context = (RuleContext) node.getParent().getPayload();
+
         final Token token = node.getSymbol();
 
         log.debug("\"{}\" error node visited.", token.getText());
 
-        transformToken(transformations, token);
+        transformToken(transformations, context, token);
     }
 
     @Override
@@ -118,7 +120,7 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
             log.debug("Transforming rule \"{}\".", ruleName);
 
-            transformString(transformations, ruleName, token);
+            transformString(transformations, ruleName, context, token);
         }
     }
 
@@ -127,7 +129,7 @@ public class TransformingParseTreeListener implements ParseTreeListener {
         return recognizer.getRuleNames()[rule];
     }
 
-    private void transformToken(Transformations<TokenTransformation> transformations, Token token) {
+    private void transformToken(Transformations<TokenTransformation> transformations, RuleContext context, Token token) {
 
         if (isValidTokenType(token)) {
 
@@ -135,11 +137,12 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
             log.debug("Transforming token \"{}\".", tokenName);
 
-            transformString(transformations, tokenName, token);
+            transformString(transformations, tokenName, context, token);
         }
     }
 
-    private void transformString(Transformations<TokenTransformation> transformations, String name, Token token) {
+    private void transformString(Transformations<TokenTransformation> transformations, String name, RuleContext context,
+                                 Token token) {
 
         final TokenTransformation transformation = transformations.get(name);
 
@@ -147,7 +150,7 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
         final String currentTokenString = tokenStrings.get(token);
 
-        final String transformedString = transformation.apply(null, token, currentTokenString);
+        final String transformedString = transformation.apply(context, token, currentTokenString);
 
         inPlaceModifiableString.setSubstring(transformedString, token.getStartIndex(), token.getStopIndex());
 

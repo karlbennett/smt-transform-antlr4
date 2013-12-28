@@ -1,6 +1,8 @@
 package shiver.me.timbers.transform.antlr4.listeners;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.junit.Before;
 import org.junit.Test;
 import shiver.me.timbers.transform.Transformations;
@@ -15,12 +17,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_CONTEXT_ONE;
+import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_CONTEXT_TWO;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_NAME_ONE;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_NAME_TWO;
+import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_TYPE_ONE;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_RULE_TYPE_TWO;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_TOKEN_NAME_ONE;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_TOKEN_NAME_TWO;
-import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_TOKEN_TYPE_TWO;
+import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_TOKEN_ONE;
+import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.TEST_TOKEN_TWO;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.mockErrorNode;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.mockErrorNodeWithDefaultToken;
 import static shiver.me.timbers.transform.antlr4.listeners.TestUtils.mockParserRuleContext;
@@ -37,6 +43,7 @@ public class TransformingParseTreeListenerTest {
     private static final int CALLED_FOUR_TIMES = 4;
 
     private Recognizer recognizer;
+    private TokenTransformation transformation;
     private Transformations<TokenTransformation> transformations;
     private Transformations<TokenTransformation> parentTransformations;
     private InPlaceModifiableString inPlaceModifiableString;
@@ -47,7 +54,7 @@ public class TransformingParseTreeListenerTest {
 
         recognizer = mockRecognizer();
 
-        final TokenTransformation transformation = mock(TokenTransformation.class);
+        transformation = mock(TokenTransformation.class);
 
         transformations = mock(Transformations.class);
         when(transformations.get(anyInt())).thenReturn(transformation);
@@ -119,9 +126,11 @@ public class TransformingParseTreeListenerTest {
 
         createListener().visitTerminal(mockTerminalNodeWithDefaultToken());
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
+        verifyTransformations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
 
-        verifyParentTransforamations(CALLED_ONCE, TEST_RULE_NAME_ONE);
+        verifyParentTransformations(CALLED_ONCE, TEST_RULE_NAME_ONE);
+
+        verifyTransformation(CALLED_TWICE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
 
         verifyTransformableString(CALLED_TWICE);
 
@@ -135,9 +144,11 @@ public class TransformingParseTreeListenerTest {
         listener.visitTerminal(mockTerminalNodeWithDefaultToken());
         listener.visitTerminal(mockTerminalNodeWithDefaultToken());
 
-        verifyTransforamations(CALLED_TWICE, TEST_TOKEN_NAME_ONE);
+        verifyTransformations(CALLED_TWICE, TEST_TOKEN_NAME_ONE);
 
-        verifyParentTransforamations(CALLED_TWICE, TEST_RULE_NAME_ONE);
+        verifyParentTransformations(CALLED_TWICE, TEST_RULE_NAME_ONE);
+
+        verifyTransformation(CALLED_FOUR_TIMES, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
 
         verifyTransformableString(CALLED_FOUR_TIMES);
 
@@ -149,12 +160,15 @@ public class TransformingParseTreeListenerTest {
 
         final TransformingParseTreeListener listener = createListener();
         listener.visitTerminal(mockTerminalNodeWithDefaultToken());
-        listener.visitTerminal(mockTerminalNode(TEST_TOKEN_NAME_TWO, TEST_TOKEN_TYPE_TWO));
+        listener.visitTerminal(mockTerminalNode(TEST_RULE_CONTEXT_ONE, TEST_TOKEN_TWO));
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_TWO);
+        verifyTransformations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
+        verifyTransformations(CALLED_ONCE, TEST_TOKEN_NAME_TWO);
 
-        verifyParentTransforamations(CALLED_TWICE, TEST_RULE_NAME_ONE);
+        verifyParentTransformations(CALLED_TWICE, TEST_RULE_NAME_ONE);
+
+        verifyTransformation(CALLED_TWICE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
+        verifyTransformation(CALLED_TWICE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_TWO);
 
         verifyTransformableString(CALLED_FOUR_TIMES);
 
@@ -172,7 +186,9 @@ public class TransformingParseTreeListenerTest {
 
         createListener().visitErrorNode(mockErrorNodeWithDefaultToken());
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
+        verifyTransformations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
+
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
 
         verifyTransformableString(CALLED_ONCE);
 
@@ -186,7 +202,9 @@ public class TransformingParseTreeListenerTest {
         listener.visitErrorNode(mockErrorNodeWithDefaultToken());
         listener.visitErrorNode(mockErrorNodeWithDefaultToken());
 
-        verifyTransforamations(CALLED_TWICE, TEST_TOKEN_NAME_ONE);
+        verifyTransformations(CALLED_TWICE, TEST_TOKEN_NAME_ONE);
+
+        verifyTransformation(CALLED_TWICE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
 
         verifyTransformableString(CALLED_TWICE);
 
@@ -198,10 +216,31 @@ public class TransformingParseTreeListenerTest {
 
         final TransformingParseTreeListener listener = createListener();
         listener.visitErrorNode(mockErrorNodeWithDefaultToken());
-        listener.visitErrorNode(mockErrorNode(TEST_TOKEN_NAME_TWO, TEST_TOKEN_TYPE_TWO));
+        listener.visitErrorNode(mockErrorNode(TEST_RULE_CONTEXT_ONE, TEST_TOKEN_TWO));
 
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
-        verifyTransforamations(CALLED_ONCE, TEST_TOKEN_NAME_TWO);
+        verifyTransformations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
+        verifyTransformations(CALLED_ONCE, TEST_TOKEN_NAME_TWO);
+
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_TWO);
+
+        verifyTransformableString(CALLED_TWICE);
+
+        verifyNoMoreDependencyInteractions();
+    }
+
+    @Test
+    public void testVisitErrorNodeTwiceWithDifferentRulesAndTokens() {
+
+        final TransformingParseTreeListener listener = createListener();
+        listener.visitErrorNode(mockErrorNodeWithDefaultToken());
+        listener.visitErrorNode(mockErrorNode(TEST_RULE_CONTEXT_TWO, TEST_TOKEN_TWO));
+
+        verifyTransformations(CALLED_ONCE, TEST_TOKEN_NAME_ONE);
+        verifyTransformations(CALLED_ONCE, TEST_TOKEN_NAME_TWO);
+
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_TWO, TEST_TOKEN_TWO);
 
         verifyTransformableString(CALLED_TWICE);
 
@@ -217,9 +256,11 @@ public class TransformingParseTreeListenerTest {
     @Test
     public void testEnterEveryRule() {
 
-        createListener().enterEveryRule(mockParserRuleContextWithDefaultToken());
+        createListener().enterEveryRule(TEST_RULE_CONTEXT_ONE);
 
-        verifyTransforamations(CALLED_ONCE, TEST_RULE_NAME_ONE);
+        verifyTransformations(CALLED_ONCE, TEST_RULE_NAME_ONE);
+
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
 
         verifyTransformableString(CALLED_ONCE);
 
@@ -230,10 +271,12 @@ public class TransformingParseTreeListenerTest {
     public void testEnterEveryRuleTwiceWithTheSameToken() {
 
         final TransformingParseTreeListener listener = createListener();
-        listener.enterEveryRule(mockParserRuleContextWithDefaultToken());
-        listener.enterEveryRule(mockParserRuleContextWithDefaultToken());
+        listener.enterEveryRule(TEST_RULE_CONTEXT_ONE);
+        listener.enterEveryRule(TEST_RULE_CONTEXT_ONE);
 
-        verifyTransforamations(CALLED_TWICE, TEST_RULE_NAME_ONE);
+        verifyTransformations(CALLED_TWICE, TEST_RULE_NAME_ONE);
+
+        verifyTransformation(CALLED_TWICE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
 
         verifyTransformableString(CALLED_TWICE);
 
@@ -243,11 +286,16 @@ public class TransformingParseTreeListenerTest {
     @Test
     public void testEnterEveryRuleTwiceWithDifferentTokens() {
 
-        final TransformingParseTreeListener listener = createListener();
-        listener.enterEveryRule(mockParserRuleContextWithDefaultToken());
-        listener.enterEveryRule(mockParserRuleContext(TEST_TOKEN_NAME_TWO, TEST_TOKEN_TYPE_TWO));
+        final ParserRuleContext mockContext = mockParserRuleContext(TEST_RULE_TYPE_ONE, TEST_TOKEN_TWO);
 
-        verifyTransforamations(CALLED_TWICE, TEST_RULE_NAME_ONE);
+        final TransformingParseTreeListener listener = createListener();
+        listener.enterEveryRule(TEST_RULE_CONTEXT_ONE);
+        listener.enterEveryRule(mockContext);
+
+        verifyTransformations(CALLED_TWICE, TEST_RULE_NAME_ONE);
+
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
+        verifyTransformation(CALLED_ONCE, mockContext, TEST_TOKEN_TWO);
 
         verifyTransformableString(CALLED_TWICE);
 
@@ -257,12 +305,35 @@ public class TransformingParseTreeListenerTest {
     @Test
     public void testEnterEveryRuleTwiceWithDifferentRules() {
 
-        final TransformingParseTreeListener listener = createListener();
-        listener.enterEveryRule(mockParserRuleContextWithDefaultToken());
-        listener.enterEveryRule(mockParserRuleContext(TEST_RULE_TYPE_TWO, TEST_TOKEN_NAME_TWO, TEST_TOKEN_TYPE_TWO));
+        final ParserRuleContext mockContext = mockParserRuleContext(TEST_RULE_TYPE_TWO, TEST_TOKEN_ONE);
 
-        verifyTransforamations(CALLED_ONCE, TEST_RULE_NAME_ONE);
-        verifyTransforamations(CALLED_ONCE, TEST_RULE_NAME_TWO);
+        final TransformingParseTreeListener listener = createListener();
+        listener.enterEveryRule(TEST_RULE_CONTEXT_ONE);
+        listener.enterEveryRule(mockContext);
+
+        verifyTransformations(CALLED_ONCE, TEST_RULE_NAME_ONE);
+        verifyTransformations(CALLED_ONCE, TEST_RULE_NAME_TWO);
+
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
+        verifyTransformation(CALLED_ONCE, mockContext, TEST_TOKEN_ONE);
+
+        verifyTransformableString(CALLED_TWICE);
+
+        verifyNoMoreDependencyInteractions();
+    }
+
+    @Test
+    public void testEnterEveryRuleTwiceWithDifferentRulesAndTokens() {
+
+        final TransformingParseTreeListener listener = createListener();
+        listener.enterEveryRule(TEST_RULE_CONTEXT_ONE);
+        listener.enterEveryRule(TEST_RULE_CONTEXT_TWO);
+
+        verifyTransformations(CALLED_ONCE, TEST_RULE_NAME_ONE);
+        verifyTransformations(CALLED_ONCE, TEST_RULE_NAME_TWO);
+
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
+        verifyTransformation(CALLED_ONCE, TEST_RULE_CONTEXT_TWO, TEST_TOKEN_TWO);
 
         verifyTransformableString(CALLED_TWICE);
 
@@ -298,7 +369,7 @@ public class TransformingParseTreeListenerTest {
 
         final TransformingParseTreeListener listener = createListener();
         listener.exitEveryRule(mockParserRuleContextWithDefaultToken());
-        listener.exitEveryRule(mockParserRuleContext(TEST_TOKEN_NAME_TWO, TEST_TOKEN_TYPE_TWO));
+        listener.exitEveryRule(mockParserRuleContext(TEST_RULE_TYPE_ONE, TEST_TOKEN_TWO));
 
         verifyNoMoreDependencyInteractions();
     }
@@ -326,12 +397,17 @@ public class TransformingParseTreeListenerTest {
                 inPlaceModifiableString);
     }
 
-    private void verifyTransforamations(int times, String value) {
+    private void verifyTransformation(int times, ParserRuleContext context, Token token) {
+
+        verify(transformation, times(times)).apply(context, token, token.getText());
+    }
+
+    private void verifyTransformations(int times, String value) {
 
         verify(transformations, times(times)).get(value);
     }
 
-    private void verifyParentTransforamations(int times, String value) {
+    private void verifyParentTransformations(int times, String value) {
 
         verify(parentTransformations, times(times)).get(value);
     }
