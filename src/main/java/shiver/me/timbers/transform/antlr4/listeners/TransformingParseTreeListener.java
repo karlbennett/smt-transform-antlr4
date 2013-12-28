@@ -10,8 +10,8 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import shiver.me.timbers.transform.InPlaceModifiableString;
 import shiver.me.timbers.transform.IndividualTransformations;
-import shiver.me.timbers.transform.TransformableString;
 import shiver.me.timbers.transform.Transformation;
 import shiver.me.timbers.transform.Transformations;
 
@@ -33,24 +33,26 @@ public class TransformingParseTreeListener implements ParseTreeListener {
     private final Recognizer recognizer;
     private final Transformations transformations;
     private Transformations parentRuleTransformations;
-    private final TransformableString transformableString;
+    private final InPlaceModifiableString inPlaceModifiableString;
+
+    private TokenStrings tokenStrings;
 
     public TransformingParseTreeListener(Recognizer recognizer, Transformations transformations,
-                                         TransformableString transformableString) {
+                                         InPlaceModifiableString inPlaceModifiableString) {
 
-        this(recognizer, transformations, EMPTY_TRANSFORMATIONS, transformableString);
+        this(recognizer, transformations, EMPTY_TRANSFORMATIONS, inPlaceModifiableString);
     }
 
     /**
      * The {@code parentRuleTransformations} argument in this constructor should contain any transformations that should
      * be run for the parent rule of a terminal token. That is when a token is passed to
      * {@link #visitTerminal(TerminalNode)} it's parent rules name will be passed to the
-     * {@link Transformations#get(String)} method of the {@code parentRuleTransformations} and the resulting
+     * {@link Transformations#get(Object)} method of the {@code parentRuleTransformations} and the resulting
      * transformation will be applied to that token.
      */
     public TransformingParseTreeListener(Recognizer recognizer, Transformations transformations,
                                          Transformations parentRuleTransformations,
-                                         TransformableString transformableString) {
+                                         InPlaceModifiableString inPlaceModifiableString) {
 
         log.debug("{} created.", TransformingParseTreeListener.class.getSimpleName());
 
@@ -58,12 +60,14 @@ public class TransformingParseTreeListener implements ParseTreeListener {
         assertIsNotNull(argumentIsNullMessage("transformations"), transformations);
         assertIsNotNull(argumentIsNullMessage("parentRuleTransformations"),
                 parentRuleTransformations);
-        assertIsNotNull(argumentIsNullMessage("transformableString"), transformableString);
+        assertIsNotNull(argumentIsNullMessage("inPlaceModifiableString"), inPlaceModifiableString);
 
-        this.transformableString = transformableString;
+        this.recognizer = recognizer;
         this.transformations = transformations;
         this.parentRuleTransformations = parentRuleTransformations;
-        this.recognizer = recognizer;
+        this.inPlaceModifiableString = inPlaceModifiableString;
+
+        this.tokenStrings = new TokenStrings();
     }
 
     @Override
@@ -106,13 +110,14 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
     private void transformRule(Transformations transformations, RuleContext context, Token token) {
 
-        final String ruleName = getRuleName(context.getRuleIndex());
+        if (isValidTokenType(token)) {
 
-        final Transformation transformation = transformations.get(ruleName);
+            final String ruleName = getRuleName(context.getRuleIndex());
 
-        log.debug("\"{}\" transformation found for rule \"{}\".", transformation.getName(), ruleName);
+            log.debug("Transforming rule \"{}\".", ruleName);
 
-        transformableString.transformSubstring(transformation, token.getStartIndex(), token.getStopIndex());
+            transformString(transformations, ruleName, token);
+        }
     }
 
     private String getRuleName(int rule) {
@@ -126,12 +131,25 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
             final String tokenName = getTokenName(token.getType());
 
-            final Transformation transformation = transformations.get(tokenName);
+            log.debug("Transforming token \"{}\".", tokenName);
 
-            log.debug("\"{}\" transformation found for token \"{}\".", transformation.getName(), tokenName);
-
-            transformableString.transformSubstring(transformation, token.getStartIndex(), token.getStopIndex());
+            transformString(transformations, tokenName, token);
         }
+    }
+
+    private void transformString(Transformations transformations, String name, Token token) {
+
+        final Transformation transformation = transformations.get(name);
+
+        log.debug("Transformation \"{}\" found for token \"{}\".", transformation.getName(), token.getText());
+
+        final String currentTokenString = tokenStrings.get(token);
+
+        final String transformedString = transformation.apply(currentTokenString);
+
+        inPlaceModifiableString.setSubstring(transformedString, token.getStartIndex(), token.getStopIndex());
+
+        tokenStrings.set(token, transformedString);
     }
 
     private boolean isValidTokenType(Token token) {
@@ -147,6 +165,6 @@ public class TransformingParseTreeListener implements ParseTreeListener {
     @Override
     public String toString() {
 
-        return transformableString.toString();
+        return inPlaceModifiableString.toString();
     }
 }

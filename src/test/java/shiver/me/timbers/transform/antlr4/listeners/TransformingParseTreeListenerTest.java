@@ -3,12 +3,11 @@ package shiver.me.timbers.transform.antlr4.listeners;
 import org.antlr.v4.runtime.Recognizer;
 import org.junit.Before;
 import org.junit.Test;
-import shiver.me.timbers.transform.TransformableString;
+import shiver.me.timbers.transform.InPlaceModifiableString;
 import shiver.me.timbers.transform.Transformation;
 import shiver.me.timbers.transform.Transformations;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -40,7 +39,7 @@ public class TransformingParseTreeListenerTest {
     private Recognizer recognizer;
     private Transformations transformations;
     private Transformations parentTransformations;
-    private TransformableString transformableString;
+    private InPlaceModifiableString inPlaceModifiableString;
 
     @Before
     public void setUp() {
@@ -57,25 +56,25 @@ public class TransformingParseTreeListenerTest {
         when(parentTransformations.get(anyInt())).thenReturn(transformation);
         when(parentTransformations.get(anyString())).thenReturn(transformation);
 
-        transformableString = mock(TransformableString.class);
+        inPlaceModifiableString = mock(InPlaceModifiableString.class);
     }
 
     @Test
     public void testCreateWithMinimalDependencies() {
 
-        new TransformingParseTreeListener(recognizer, transformations, transformableString);
+        new TransformingParseTreeListener(recognizer, transformations, inPlaceModifiableString);
     }
 
     @Test(expected = AssertionError.class)
     public void testCreateWithMinimalDependenciesAndNullRecognizer() {
 
-        new TransformingParseTreeListener(null, transformations, transformableString);
+        new TransformingParseTreeListener(null, transformations, inPlaceModifiableString);
     }
 
     @Test(expected = AssertionError.class)
     public void testCreateWithMinimalDependenciesAndNullTransformations() {
 
-        new TransformingParseTreeListener(recognizer, null, transformableString);
+        new TransformingParseTreeListener(recognizer, null, inPlaceModifiableString);
     }
 
     @Test(expected = AssertionError.class)
@@ -93,19 +92,19 @@ public class TransformingParseTreeListenerTest {
     @Test(expected = AssertionError.class)
     public void testCreateWithNullRecognizer() {
 
-        new TransformingParseTreeListener(null, transformations, parentTransformations, transformableString);
+        new TransformingParseTreeListener(null, transformations, parentTransformations, inPlaceModifiableString);
     }
 
     @Test(expected = AssertionError.class)
     public void testCreateWithNullTransformations() {
 
-        new TransformingParseTreeListener(recognizer, null, parentTransformations, transformableString);
+        new TransformingParseTreeListener(recognizer, null, parentTransformations, inPlaceModifiableString);
     }
 
     @Test(expected = AssertionError.class)
     public void testCreateWithNullParentTransformations() {
 
-        new TransformingParseTreeListener(recognizer, transformations, null, transformableString);
+        new TransformingParseTreeListener(recognizer, transformations, null, inPlaceModifiableString);
     }
 
     @Test(expected = AssertionError.class)
@@ -314,16 +313,16 @@ public class TransformingParseTreeListenerTest {
     @Test
     public void testToString() {
 
-        when(transformableString.toString()).thenReturn(TEST_STRING);
+        when(inPlaceModifiableString.toString()).thenReturn(TEST_STRING);
 
-        assertEquals("the listener toString should match the transformableString.toString.", TEST_STRING,
+        assertEquals("the listener toString should match the inPlaceModifiableString.toString.", TEST_STRING,
                 createListener().toString());
     }
 
     private TransformingParseTreeListener createListener() {
 
         return new TransformingParseTreeListener(recognizer, transformations, parentTransformations,
-                transformableString);
+                inPlaceModifiableString);
     }
 
     private void verifyTransforamations(int times, String value) {
@@ -338,13 +337,13 @@ public class TransformingParseTreeListenerTest {
 
     private void verifyTransformableString(int times) {
 
-        verify(transformableString, times(times)).transformSubstring(any(Transformation.class), anyInt(), anyInt());
+        verify(inPlaceModifiableString, times(times)).setSubstring(anyString(), anyInt(), anyInt());
     }
 
     private void verifyNoMoreDependencyInteractions() {
 
         verifyNoMoreInteractions(transformations);
         verifyNoMoreInteractions(parentTransformations);
-        verifyNoMoreInteractions(transformableString);
+        verifyNoMoreInteractions(inPlaceModifiableString);
     }
 }

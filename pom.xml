@@ -16,7 +16,8 @@
 
     <name>${project.artifactId}</name>
 
-    <description>This is a library of classes that can help with implementing the smt-transform API with ANTLR4.</description>
+    <description>This is a library of classes that can help with implementing the smt-transform API with ANTLR4.
+    </description>
 
     <url>http://karlbennett.github.io/${project.artifactId}/</url>
 
