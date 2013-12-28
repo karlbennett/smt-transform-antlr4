@@ -10,10 +10,10 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import shiver.me.timbers.transform.InPlaceModifiableString;
 import shiver.me.timbers.transform.IndividualTransformations;
 import shiver.me.timbers.transform.Transformation;
 import shiver.me.timbers.transform.Transformations;
+import shiver.me.timbers.transform.antlr4.InPlaceModifiableString;
 
 import java.util.Collections;
 

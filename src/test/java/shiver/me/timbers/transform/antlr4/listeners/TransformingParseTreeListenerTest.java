@@ -3,9 +3,9 @@ package shiver.me.timbers.transform.antlr4.listeners;
 import org.antlr.v4.runtime.Recognizer;
 import org.junit.Before;
 import org.junit.Test;
-import shiver.me.timbers.transform.InPlaceModifiableString;
 import shiver.me.timbers.transform.Transformation;
 import shiver.me.timbers.transform.Transformations;
+import shiver.me.timbers.transform.antlr4.InPlaceModifiableString;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
