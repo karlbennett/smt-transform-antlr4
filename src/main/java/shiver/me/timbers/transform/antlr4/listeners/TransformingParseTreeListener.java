@@ -11,33 +11,35 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import shiver.me.timbers.transform.IndividualTransformations;
-import shiver.me.timbers.transform.Transformation;
 import shiver.me.timbers.transform.Transformations;
 import shiver.me.timbers.transform.antlr4.InPlaceModifiableString;
+import shiver.me.timbers.transform.antlr4.TokenTransformation;
 
 import java.util.Collections;
 
 import static shiver.me.timbers.asserts.Asserts.argumentIsNullMessage;
 import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
+import static shiver.me.timbers.transform.antlr4.NullTokenTransformation.NULL_TOKEN_TRANSFORMATION;
 
 /**
  * This parse tree listener will apply any supplied transformations to related tokens exposed in the listener methods.
  */
 public class TransformingParseTreeListener implements ParseTreeListener {
 
-    private static final Transformations EMPTY_TRANSFORMATIONS = new IndividualTransformations(
-            Collections.<Transformation>emptySet());
+    private static final Transformations<TokenTransformation> EMPTY_TRANSFORMATIONS =
+            new IndividualTransformations<TokenTransformation>(Collections.<TokenTransformation>emptySet(),
+                    NULL_TOKEN_TRANSFORMATION);
 
     private final Logger log = LoggerFactory.getLogger(TransformingParseTreeListener.class);
 
     private final Recognizer recognizer;
-    private final Transformations transformations;
-    private Transformations parentRuleTransformations;
+    private final Transformations<TokenTransformation> transformations;
+    private Transformations<TokenTransformation> parentRuleTransformations;
     private final InPlaceModifiableString inPlaceModifiableString;
 
     private TokenStrings tokenStrings;
 
-    public TransformingParseTreeListener(Recognizer recognizer, Transformations transformations,
+    public TransformingParseTreeListener(Recognizer recognizer, Transformations<TokenTransformation> transformations,
                                          InPlaceModifiableString inPlaceModifiableString) {
 
         this(recognizer, transformations, EMPTY_TRANSFORMATIONS, inPlaceModifiableString);
@@ -50,8 +52,8 @@ public class TransformingParseTreeListener implements ParseTreeListener {
      * {@link Transformations#get(Object)} method of the {@code parentRuleTransformations} and the resulting
      * transformation will be applied to that token.
      */
-    public TransformingParseTreeListener(Recognizer recognizer, Transformations transformations,
-                                         Transformations parentRuleTransformations,
+    public TransformingParseTreeListener(Recognizer recognizer, Transformations<TokenTransformation> transformations,
+                                         Transformations<TokenTransformation> parentRuleTransformations,
                                          InPlaceModifiableString inPlaceModifiableString) {
 
         log.debug("{} created.", TransformingParseTreeListener.class.getSimpleName());
@@ -108,7 +110,7 @@ public class TransformingParseTreeListener implements ParseTreeListener {
     public void exitEveryRule(@NotNull ParserRuleContext context) {
     }
 
-    private void transformRule(Transformations transformations, RuleContext context, Token token) {
+    private void transformRule(Transformations<TokenTransformation> transformations, RuleContext context, Token token) {
 
         if (isValidTokenType(token)) {
 
@@ -125,7 +127,7 @@ public class TransformingParseTreeListener implements ParseTreeListener {
         return recognizer.getRuleNames()[rule];
     }
 
-    private void transformToken(Transformations transformations, Token token) {
+    private void transformToken(Transformations<TokenTransformation> transformations, Token token) {
 
         if (isValidTokenType(token)) {
 
@@ -137,15 +139,15 @@ public class TransformingParseTreeListener implements ParseTreeListener {
         }
     }
 
-    private void transformString(Transformations transformations, String name, Token token) {
+    private void transformString(Transformations<TokenTransformation> transformations, String name, Token token) {
 
-        final Transformation transformation = transformations.get(name);
+        final TokenTransformation transformation = transformations.get(name);
 
         log.debug("Transformation \"{}\" found for token \"{}\".", transformation.getName(), token.getText());
 
         final String currentTokenString = tokenStrings.get(token);
 
-        final String transformedString = transformation.apply(currentTokenString);
+        final String transformedString = transformation.apply(null, token, currentTokenString);
 
         inPlaceModifiableString.setSubstring(transformedString, token.getStartIndex(), token.getStopIndex());
 

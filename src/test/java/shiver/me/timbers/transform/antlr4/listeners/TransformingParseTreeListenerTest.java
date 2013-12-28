@@ -3,9 +3,9 @@ package shiver.me.timbers.transform.antlr4.listeners;
 import org.antlr.v4.runtime.Recognizer;
 import org.junit.Before;
 import org.junit.Test;
-import shiver.me.timbers.transform.Transformation;
 import shiver.me.timbers.transform.Transformations;
 import shiver.me.timbers.transform.antlr4.InPlaceModifiableString;
+import shiver.me.timbers.transform.antlr4.TokenTransformation;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
@@ -37,16 +37,17 @@ public class TransformingParseTreeListenerTest {
     private static final int CALLED_FOUR_TIMES = 4;
 
     private Recognizer recognizer;
-    private Transformations transformations;
-    private Transformations parentTransformations;
+    private Transformations<TokenTransformation> transformations;
+    private Transformations<TokenTransformation> parentTransformations;
     private InPlaceModifiableString inPlaceModifiableString;
 
     @Before
+    @SuppressWarnings("unchecked")
     public void setUp() {
 
         recognizer = mockRecognizer();
 
-        final Transformation transformation = mock(Transformation.class);
+        final TokenTransformation transformation = mock(TokenTransformation.class);
 
         transformations = mock(Transformations.class);
         when(transformations.get(anyInt())).thenReturn(transformation);
