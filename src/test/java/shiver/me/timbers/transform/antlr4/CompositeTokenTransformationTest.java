@@ -20,22 +20,22 @@ public class CompositeTokenTransformationTest {
 
     private static final String TEST_TEXT = "some test text.";
 
-    private TokenApplyer applyer;
+    private TokenApplier applier;
 
     @Before
     public void setUp() {
 
-        applyer = mock(TokenApplyer.class);
+        applier = mock(TokenApplier.class);
     }
 
     @Test
     public void testCreate() {
 
-        new CompositeTokenTransformation(NAME, applyer);
+        new CompositeTokenTransformation(NAME, applier);
     }
 
     @Test(expected = AssertionError.class)
-    public void testCreateWithNullApplyer() {
+    public void testCreateWithNullApplier() {
 
         new CompositeTokenTransformation(NAME, null);
     }
@@ -43,13 +43,13 @@ public class CompositeTokenTransformationTest {
     @Test(expected = AssertionError.class)
     public void testCreateWithNullName() {
 
-        new CompositeTokenTransformation(null, applyer);
+        new CompositeTokenTransformation(null, applier);
     }
 
     @Test
     public void testGetName() {
 
-        assertEquals("the name should be set correctly.", NAME, new CompositeTokenTransformation(NAME, applyer).getName());
+        assertEquals("the name should be set correctly.", NAME, new CompositeTokenTransformation(NAME, applier).getName());
     }
 
     @Test
@@ -58,40 +58,40 @@ public class CompositeTokenTransformationTest {
         final RuleContext context = mock(RuleContext.class);
         final Token token = mock(Token.class);
 
-        new CompositeTokenTransformation(NAME, applyer).apply(context, token, TEST_TEXT);
+        new CompositeTokenTransformation(NAME, applier).apply(context, token, TEST_TEXT);
 
-        verify(applyer, times(1)).apply(context, token, TEST_TEXT);
+        verify(applier, times(1)).apply(context, token, TEST_TEXT);
     }
 
     @Test
     public void testApplyWithNullRuleContext() {
 
-        new CompositeTokenTransformation(NAME, applyer).apply(null, mock(Token.class), TEST_TEXT);
+        new CompositeTokenTransformation(NAME, applier).apply(null, mock(Token.class), TEST_TEXT);
 
-        verify(applyer, times(1)).apply(isNull(RuleContext.class), any(Token.class), eq(TEST_TEXT));
+        verify(applier, times(1)).apply(isNull(RuleContext.class), any(Token.class), eq(TEST_TEXT));
     }
 
     @Test
     public void testApplyWithNullToken() {
 
-        new CompositeTokenTransformation(NAME, applyer).apply(mock(RuleContext.class), null, TEST_TEXT);
+        new CompositeTokenTransformation(NAME, applier).apply(mock(RuleContext.class), null, TEST_TEXT);
 
-        verify(applyer, times(1)).apply(any(RuleContext.class), isNull(Token.class), eq(TEST_TEXT));
+        verify(applier, times(1)).apply(any(RuleContext.class), isNull(Token.class), eq(TEST_TEXT));
     }
 
     @Test
     public void testApplyWithNullString() {
 
-        new CompositeTokenTransformation(NAME, applyer).apply(mock(RuleContext.class), mock(Token.class), null);
+        new CompositeTokenTransformation(NAME, applier).apply(mock(RuleContext.class), mock(Token.class), null);
 
-        verify(applyer, times(1)).apply(any(RuleContext.class), any(Token.class), isNull(String.class));
+        verify(applier, times(1)).apply(any(RuleContext.class), any(Token.class), isNull(String.class));
     }
 
     @Test(expected = Exception.class)
     public void testApplyWithException() {
 
-        when(applyer.apply(any(RuleContext.class), any(Token.class), TEST_TEXT)).thenThrow(new Exception());
+        when(applier.apply(any(RuleContext.class), any(Token.class), TEST_TEXT)).thenThrow(new Exception());
 
-        new CompositeTokenTransformation(NAME, applyer).apply(mock(RuleContext.class), mock(Token.class), TEST_TEXT);
+        new CompositeTokenTransformation(NAME, applier).apply(mock(RuleContext.class), mock(Token.class), TEST_TEXT);
     }
 }

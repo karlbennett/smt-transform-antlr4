@@ -12,18 +12,18 @@ import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
 import static shiver.me.timbers.transform.antlr4.NullTokenTransformation.NULL_TOKEN_TRANSFORMATION;
 
 /**
- * A collection of transformation names that will all match to the same {@link TokenApplyer#apply} logic.
+ * A collection of transformation names that will all match to the same {@link TokenApplier#apply} logic.
  */
 public class CompoundTransformations extends IndividualTransformations<TokenTransformation> {
 
-    public CompoundTransformations(Iterable<String> names, TokenApplyer applyer) {
-        super(createTransformations(names, applyer), NULL_TOKEN_TRANSFORMATION);
+    public CompoundTransformations(Iterable<String> names, TokenApplier applier) {
+        super(createTransformations(names, applier), NULL_TOKEN_TRANSFORMATION);
     }
 
-    private static Iterable<TokenTransformation> createTransformations(Iterable<String> names, final TokenApplyer applyer) {
+    private static Iterable<TokenTransformation> createTransformations(Iterable<String> names, final TokenApplier applier) {
 
         assertIsNotNull(argumentIsNullMessage("names"), names);
-        assertIsNotNull(argumentIsNullMessage("applyer"), applyer);
+        assertIsNotNull(argumentIsNullMessage("applier"), applier);
 
         final List<TokenTransformation> transformations = new LinkedList<TokenTransformation>();
 
@@ -40,7 +40,7 @@ public class CompoundTransformations extends IndividualTransformations<TokenTran
                 @Override
                 public String apply(RuleContext context, Token token, String string) {
 
-                    return applyer.apply(context, token, string);
+                    return applier.apply(context, token, string);
                 }
             });
         }

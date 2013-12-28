@@ -23,36 +23,36 @@ import static shiver.me.timbers.transform.antlr4.TestUtils.mockIterable;
 
 public class CompoundTransformationsTest {
 
-    private TokenApplyer applyer;
+    private TokenApplier applier;
 
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() {
 
-        applyer = mock(TokenApplyer.class);
+        applier = mock(TokenApplier.class);
     }
 
     @Test
     public void testCreate() {
 
-        new CompoundTransformations(mockIterable(NAMES), mock(TokenApplyer.class));
+        new CompoundTransformations(mockIterable(NAMES), mock(TokenApplier.class));
     }
 
     @Test
     @SuppressWarnings("UnusedDeclaration")
     public void testCreateWithEmptyIterable() {
 
-        assertNoIterations(new CompoundTransformations(Collections.<String>emptySet(), applyer));
+        assertNoIterations(new CompoundTransformations(Collections.<String>emptySet(), applier));
     }
 
     @Test(expected = AssertionError.class)
     public void testCreateWithNullIterable() {
 
-        new CompoundTransformations(null, mock(TokenApplyer.class));
+        new CompoundTransformations(null, mock(TokenApplier.class));
     }
 
     @Test(expected = AssertionError.class)
-    public void testCreateWithNullApplyer() {
+    public void testCreateWithNullApplier() {
 
         new CompoundTransformations(mockIterable(NAMES), null);
     }
@@ -60,13 +60,13 @@ public class CompoundTransformationsTest {
     @Test
     public void testGetWithIndex() {
 
-        assertTransformationsHaveCorrectNamesForIndices(new CompoundTransformations(mockIterable(NAMES), applyer));
+        assertTransformationsHaveCorrectNamesForIndices(new CompoundTransformations(mockIterable(NAMES), applier));
     }
 
     @Test
     public void testGetWithInvalidIndex() {
 
-        Transformations<TokenTransformation> transformations = new CompoundTransformations(mockIterable(NAMES), applyer);
+        Transformations<TokenTransformation> transformations = new CompoundTransformations(mockIterable(NAMES), applier);
 
         assertNullTransformation(transformations, -1);
         assertNullTransformation(transformations, NAMES.size());
@@ -75,13 +75,13 @@ public class CompoundTransformationsTest {
     @Test
     public void testGetWithName() {
 
-        assertTransformationsHaveCorrectNamesForNames(new CompoundTransformations(mockIterable(NAMES), applyer));
+        assertTransformationsHaveCorrectNamesForNames(new CompoundTransformations(mockIterable(NAMES), applier));
     }
 
     @Test
     public void testGetWithInvalidName() {
 
-        Transformations<TokenTransformation> transformations = new CompoundTransformations(mockIterable(NAMES), applyer);
+        Transformations<TokenTransformation> transformations = new CompoundTransformations(mockIterable(NAMES), applier);
 
         assertNullTransformation(transformations, "not a transformation");
     }
@@ -89,7 +89,7 @@ public class CompoundTransformationsTest {
     @Test
     public void testGetWithNullName() {
 
-        Transformations<TokenTransformation> transformations = new CompoundTransformations(mockIterable(NAMES), applyer);
+        Transformations<TokenTransformation> transformations = new CompoundTransformations(mockIterable(NAMES), applier);
 
         assertNullTransformation(transformations, null);
     }
@@ -98,17 +98,17 @@ public class CompoundTransformationsTest {
     public void testIteratorIsNotNull() {
 
         assertNotNull("an iterator should be returned",
-                new CompoundTransformations(mockIterable(NAMES), applyer).iterator());
+                new CompoundTransformations(mockIterable(NAMES), applier).iterator());
     }
 
     @Test
-    public void testApplyer() {
+    public void testApplier() {
 
         final String TEST_APPLY_STRING = "this is the apply string.";
 
-        when(applyer.apply(any(RuleContext.class), any(Token.class), anyString())).thenReturn(TEST_APPLY_STRING);
+        when(applier.apply(any(RuleContext.class), any(Token.class), anyString())).thenReturn(TEST_APPLY_STRING);
 
-        Transformations<TokenTransformation> transformations = new CompoundTransformations(mockIterable(NAMES), applyer);
+        Transformations<TokenTransformation> transformations = new CompoundTransformations(mockIterable(NAMES), applier);
 
         for (TokenTransformation transformation : transformations) {
 

@@ -8,24 +8,24 @@ import static shiver.me.timbers.asserts.Asserts.argumentIsNullMessage;
 import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
 
 /**
- * This is a concrete {@code Transformation} that can have it's {@code name} and {@link TokenApplyer} set as constructor
+ * This is a concrete {@code Transformation} that can have it's {@code name} and {@link TokenApplier} set as constructor
  * dependencies.
  */
 public class CompositeTokenTransformation extends NamedTransformation implements TokenTransformation {
 
-    private final TokenApplyer applyer;
+    private final TokenApplier applier;
 
-    public CompositeTokenTransformation(String name, TokenApplyer applyer) {
+    public CompositeTokenTransformation(String name, TokenApplier applier) {
         super(name);
 
-        assertIsNotNull(argumentIsNullMessage("applyer"), applyer);
+        assertIsNotNull(argumentIsNullMessage("applier"), applier);
 
-        this.applyer = applyer;
+        this.applier = applier;
     }
 
     @Override
     public String apply(RuleContext context, Token token, String string) {
 
-        return applyer.apply(context, token, string);
+        return applier.apply(context, token, string);
     }
 }

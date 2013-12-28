@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.Token;
 /**
  * This interface should be implemented with logic for modifying token strings.
  */
-public interface TokenApplyer {
+public interface TokenApplier {
 
     /**
      * @return a string that has been derived from the supplied inputs.
