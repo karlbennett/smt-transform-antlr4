@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import shiver.me.timbers.transform.NullTransformation;
 import shiver.me.timbers.transform.Transformations;
+import shiver.me.timbers.transform.antlr4.TokenTransformation;
 
 import java.util.BitSet;
 
@@ -31,9 +32,10 @@ public class TransformationAwareErrorListener implements ANTLRErrorListener {
     private final Logger log = LoggerFactory.getLogger(TransformationAwareErrorListener.class);
 
     private final ANTLRErrorListener listener;
-    private final Transformations transformations;
+    private final Transformations<TokenTransformation> transformations;
 
-    public TransformationAwareErrorListener(ANTLRErrorListener listener, Transformations transformations) {
+    public TransformationAwareErrorListener(ANTLRErrorListener listener,
+                                            Transformations<TokenTransformation> transformations) {
 
         assertIsNotNull(argumentIsNullMessage("listener"), listener);
         assertIsNotNull(argumentIsNullMessage("transformations"), transformations);
