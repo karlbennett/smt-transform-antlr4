@@ -33,13 +33,13 @@ public class Antlr4TransformerTest {
     @Test
     public void testCreateWithParserBuilder() {
 
-        new Antlr4Transformer<Recognizer>(mockParserBuilder());
+        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder());
     }
 
     @Test
     public void testCreateWithParserBuilderAndParentRuleTransformations() {
 
-        new Antlr4Transformer<Recognizer>(mockParserBuilder(), mockTransformations());
+        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder(), mockTransformations());
     }
 
     @Test
@@ -49,7 +49,7 @@ public class Antlr4TransformerTest {
 
         final ParserBuilder<Recognizer> parserBuilder = mockParserBuilder(transformations);
 
-        new Antlr4Transformer<Recognizer>(parserBuilder, transformations)
+        new Antlr4StreamTransformer<Recognizer>(parserBuilder, transformations)
                 .transform(toStream(TEST_STRING), transformations);
 
         verify(transformations, times(1)).get(TEST_TOKEN_NAME);
@@ -64,20 +64,20 @@ public class Antlr4TransformerTest {
     @Test(expected = RuntimeException.class)
     public void testTransformWithInvalidStream() {
 
-        new Antlr4Transformer<Recognizer>(mockParserBuilder())
+        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder())
                 .transform(mock(InputStream.class), mockTransformations());
     }
 
     @Test(expected = NullPointerException.class)
     public void testTransformWithNullStream() {
 
-        new Antlr4Transformer<Recognizer>(mockParserBuilder()).transform(null, mockTransformations());
+        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder()).transform(null, mockTransformations());
     }
 
     @Test(expected = AssertionError.class)
     public void testTransformWithNullTransformations() {
 
-        new Antlr4Transformer<Recognizer>(mockParserBuilder()).transform(toStream(TEST_STRING), null);
+        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder()).transform(toStream(TEST_STRING), null);
     }
 
     private static ParserBuilder<Recognizer> mockParserBuilder() {

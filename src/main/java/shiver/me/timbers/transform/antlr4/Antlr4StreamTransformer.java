@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import shiver.me.timbers.transform.IndividualTransformations;
 import shiver.me.timbers.transform.Transformations;
-import shiver.me.timbers.transform.Transformer;
+import shiver.me.timbers.transform.StreamTransformer;
 import shiver.me.timbers.transform.antlr4.listeners.TransformingParseTreeListener;
 
 import java.io.IOException;
@@ -22,20 +22,20 @@ import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
 import static shiver.me.timbers.transform.antlr4.NullTokenTransformation.NULL_TOKEN_TRANSFORMATION;
 
 /**
- * This is an ANTLR4 specific {@code Transformer} that can be used transform the code within the supplied input stream
+ * This is an ANTLR4 specific {@code StreamTransformer} that can be used transform the code within the supplied input stream
  * with the use of the parser built from the dependent {@code ParserBuilder}.
  */
-public class Antlr4Transformer<P extends Recognizer> implements Transformer<TokenTransformation> {
+public class Antlr4StreamTransformer<P extends Recognizer> implements StreamTransformer<TokenTransformation> {
 
     private static final int STREAM_COPY_BUFFER_SIZE = 1024 * 4; // This value was taken from commons-io.
 
-    private final Logger log = LoggerFactory.getLogger(Antlr4Transformer.class);
+    private final Logger log = LoggerFactory.getLogger(Antlr4StreamTransformer.class);
 
     private final ParserBuilder<P> parserBuilder;
 
     private final Transformations<TokenTransformation> parentRuleTransformations;
 
-    public Antlr4Transformer(ParserBuilder<P> parserBuilder) {
+    public Antlr4StreamTransformer(ParserBuilder<P> parserBuilder) {
 
         this(parserBuilder, new IndividualTransformations<TokenTransformation>(NULL_TOKEN_TRANSFORMATION));
     }
@@ -44,12 +44,12 @@ public class Antlr4Transformer<P extends Recognizer> implements Transformer<Toke
      * The {@code parentRuleTransformations} should contain any transformations that should
      * be run for the parent rule of a terminal token.
      */
-    public Antlr4Transformer(ParserBuilder<P> parserBuilder,
-                             Transformations<TokenTransformation> parentRuleTransformations) {
+    public Antlr4StreamTransformer(ParserBuilder<P> parserBuilder,
+                                   Transformations<TokenTransformation> parentRuleTransformations) {
 
         assertIsNotNull(argumentIsNullMessage("parentRuleTransformations"), parentRuleTransformations);
 
-        log.debug("{} created.", Antlr4Transformer.class.getSimpleName());
+        log.debug("{} created.", Antlr4StreamTransformer.class.getSimpleName());
 
         this.parserBuilder = parserBuilder;
         this.parentRuleTransformations = parentRuleTransformations;
