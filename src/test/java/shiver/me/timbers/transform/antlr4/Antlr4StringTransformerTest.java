@@ -7,10 +7,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.junit.Test;
 import shiver.me.timbers.transform.Transformations;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -20,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-public class Antlr4TransformerTest {
+public class Antlr4StringTransformerTest {
 
     private static final String TEST_STRING = "test string";
 
@@ -33,13 +29,13 @@ public class Antlr4TransformerTest {
     @Test
     public void testCreateWithParserBuilder() {
 
-        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder());
+        new Antlr4StringTransformer<Recognizer>(mockParserBuilder());
     }
 
     @Test
     public void testCreateWithParserBuilderAndParentRuleTransformations() {
 
-        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder(), mockTransformations());
+        new Antlr4StringTransformer<Recognizer>(mockParserBuilder(), mockTransformations());
     }
 
     @Test
@@ -49,8 +45,8 @@ public class Antlr4TransformerTest {
 
         final ParserBuilder<Recognizer> parserBuilder = mockParserBuilder(transformations);
 
-        new Antlr4StreamTransformer<Recognizer>(parserBuilder, transformations)
-                .transform(toStream(TEST_STRING), transformations);
+        new Antlr4StringTransformer<Recognizer>(parserBuilder, transformations)
+                .transform(TEST_STRING, transformations);
 
         verify(transformations, times(1)).get(TEST_TOKEN_NAME);
         verify(transformations, times(1)).get(TEST_RULE_NAME);
@@ -61,23 +57,16 @@ public class Antlr4TransformerTest {
         verifyNoMoreInteractions(parserBuilder);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testTransformWithInvalidStream() {
-
-        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder())
-                .transform(mock(InputStream.class), mockTransformations());
-    }
-
-    @Test(expected = NullPointerException.class)
+    @Test(expected = AssertionError.class)
     public void testTransformWithNullStream() {
 
-        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder()).transform(null, mockTransformations());
+        new Antlr4StringTransformer<Recognizer>(mockParserBuilder()).transform(null, mockTransformations());
     }
 
     @Test(expected = AssertionError.class)
     public void testTransformWithNullTransformations() {
 
-        new Antlr4StreamTransformer<Recognizer>(mockParserBuilder()).transform(toStream(TEST_STRING), null);
+        new Antlr4StringTransformer<Recognizer>(mockParserBuilder()).transform(TEST_STRING, null);
     }
 
     private static ParserBuilder<Recognizer> mockParserBuilder() {
@@ -124,17 +113,5 @@ public class Antlr4TransformerTest {
         when(transformations.get(anyString())).thenReturn(transformation);
 
         return transformations;
-    }
-
-    private static InputStream toStream(String string) {
-
-        try {
-
-            return new ByteArrayInputStream(string.getBytes("UTF-8"));
-
-        } catch (UnsupportedEncodingException e) {
-
-            throw new RuntimeException(e);
-        }
     }
 }
