@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import shiver.me.timbers.transform.IndividualTransformations;
+import shiver.me.timbers.transform.IterableTransformations;
 import shiver.me.timbers.transform.StringTransformer;
 import shiver.me.timbers.transform.Transformations;
 import shiver.me.timbers.transform.antlr4.listeners.TransformingParseTreeListener;
@@ -29,7 +29,7 @@ public class Antlr4StringTransformer<P extends Recognizer> implements StringTran
 
     public Antlr4StringTransformer(ParserBuilder<P> parserBuilder) {
 
-        this(parserBuilder, new IndividualTransformations<TokenTransformation>(NULL_TOKEN_TRANSFORMATION));
+        this(parserBuilder, new IterableTransformations<TokenTransformation>(NULL_TOKEN_TRANSFORMATION));
     }
 
     /**

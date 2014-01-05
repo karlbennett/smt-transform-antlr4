@@ -2,7 +2,7 @@ package shiver.me.timbers.transform.antlr4;
 
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
-import shiver.me.timbers.transform.IndividualTransformations;
+import shiver.me.timbers.transform.IterableTransformations;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +14,7 @@ import static shiver.me.timbers.transform.antlr4.NullTokenTransformation.NULL_TO
 /**
  * A collection of transformation names that will all match to the same {@link TokenApplier#apply} logic.
  */
-public class CompoundTransformations extends IndividualTransformations<TokenTransformation> {
+public class CompoundTransformations extends IterableTransformations<TokenTransformation> {
 
     public CompoundTransformations(Iterable<String> names, TokenApplier applier) {
         super(createTransformations(names, applier), NULL_TOKEN_TRANSFORMATION);
