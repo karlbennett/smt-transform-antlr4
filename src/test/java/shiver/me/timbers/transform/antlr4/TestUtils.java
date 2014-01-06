@@ -8,7 +8,9 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -79,13 +81,17 @@ public final class TestUtils {
         }
     }
 
-    public static void assertTransformationsHaveCorrectNamesForIndices(Transformations<TokenTransformation> transformations) {
+    public static void assertTransformationsHaveCorrectNamesForIndices(
+            Transformations<TokenTransformation> transformations) {
 
-        for (int i = 0; i < NAMES.size(); i++) {
+        int i = 0;
+        for (; i < NAMES.size(); i++) {
 
-            assertEquals("a Transformation with the name " + NAMES.get(i) + " should be returned for index " + i,
-                    NAMES.get(i), transformations.get(i).getName());
+            assertThat("element at index " + i + " should be correct.", NAMES,
+                    hasItem(transformations.get(i).getName()));
         }
+
+        assertEquals("the correct number of transformations should be found.", NAMES.size(), i);
     }
 
     public static void assertTransformationsHaveCorrectNamesForNames(Transformations<TokenTransformation> transformations) {
