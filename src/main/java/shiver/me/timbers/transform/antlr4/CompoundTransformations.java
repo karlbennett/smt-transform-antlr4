@@ -2,7 +2,7 @@ package shiver.me.timbers.transform.antlr4;
 
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
-import shiver.me.timbers.transform.IterableTransformations;
+import shiver.me.timbers.transform.iterable.IterableTransformations;
 
 import java.util.LinkedList;
 import java.util.List;
