@@ -12,7 +12,7 @@ import shiver.me.timbers.transform.string.StringTransformer;
 
 import static shiver.me.timbers.asserts.Asserts.argumentIsNullMessage;
 import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
-import static shiver.me.timbers.transform.antlr4.IterableTokenTransformations.*;
+import static shiver.me.timbers.transform.antlr4.IterableTokenTransformations.EMPTY_TRANSFORMATIONS;
 
 /**
  * This is an ANTLR4 specific {@code StreamTransformer} that can be used transform the code within the supplied input stream

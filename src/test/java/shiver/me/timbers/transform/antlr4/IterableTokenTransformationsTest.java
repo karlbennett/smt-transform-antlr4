@@ -2,7 +2,7 @@ package shiver.me.timbers.transform.antlr4;
 
 import org.junit.Test;
 
-import static shiver.me.timbers.transform.antlr4.NullTokenTransformation.*;
+import static shiver.me.timbers.transform.antlr4.NullTokenTransformation.NULL_TOKEN_TRANSFORMATION;
 
 public class IterableTokenTransformationsTest {
 
