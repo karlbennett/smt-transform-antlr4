@@ -8,12 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import shiver.me.timbers.transform.Transformations;
 import shiver.me.timbers.transform.antlr4.listeners.TransformingParseTreeListener;
-import shiver.me.timbers.transform.iterable.IterableTransformations;
 import shiver.me.timbers.transform.string.StringTransformer;
 
 import static shiver.me.timbers.asserts.Asserts.argumentIsNullMessage;
 import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
-import static shiver.me.timbers.transform.antlr4.NullTokenTransformation.NULL_TOKEN_TRANSFORMATION;
+import static shiver.me.timbers.transform.antlr4.IterableTokenTransformations.*;
 
 /**
  * This is an ANTLR4 specific {@code StreamTransformer} that can be used transform the code within the supplied input stream
@@ -29,7 +28,7 @@ public class Antlr4StringTransformer<P extends Recognizer> implements StringTran
 
     public Antlr4StringTransformer(ParserBuilder<P> parserBuilder) {
 
-        this(parserBuilder, new IterableTransformations<TokenTransformation>(NULL_TOKEN_TRANSFORMATION));
+        this(parserBuilder, EMPTY_TRANSFORMATIONS);
     }
 
     /**

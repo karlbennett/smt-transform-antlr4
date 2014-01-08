@@ -13,22 +13,15 @@ import org.slf4j.LoggerFactory;
 import shiver.me.timbers.transform.Transformations;
 import shiver.me.timbers.transform.antlr4.InPlaceModifiableString;
 import shiver.me.timbers.transform.antlr4.TokenTransformation;
-import shiver.me.timbers.transform.iterable.IterableTransformations;
-
-import java.util.Collections;
 
 import static shiver.me.timbers.asserts.Asserts.argumentIsNullMessage;
 import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
-import static shiver.me.timbers.transform.antlr4.NullTokenTransformation.NULL_TOKEN_TRANSFORMATION;
+import static shiver.me.timbers.transform.antlr4.IterableTokenTransformations.EMPTY_TRANSFORMATIONS;
 
 /**
  * This parse tree listener will apply any supplied transformations to related tokens exposed in the listener methods.
  */
 public class TransformingParseTreeListener implements ParseTreeListener {
-
-    private static final Transformations<TokenTransformation> EMPTY_TRANSFORMATIONS =
-            new IterableTransformations<TokenTransformation>(Collections.<TokenTransformation>emptySet(),
-                    NULL_TOKEN_TRANSFORMATION);
 
     private final Logger log = LoggerFactory.getLogger(TransformingParseTreeListener.class);
 
