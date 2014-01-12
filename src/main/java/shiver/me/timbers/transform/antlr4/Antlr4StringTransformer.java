@@ -12,7 +12,6 @@ import shiver.me.timbers.transform.string.StringTransformer;
 
 import static shiver.me.timbers.asserts.Asserts.argumentIsNullMessage;
 import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
-import static shiver.me.timbers.transform.antlr4.IterableTokenTransformations.EMPTY_TRANSFORMATIONS;
 
 /**
  * This is an ANTLR4 specific {@code StreamTransformer} that can be used transform the code within the supplied input stream
@@ -24,26 +23,13 @@ public class Antlr4StringTransformer<P extends Recognizer> implements StringTran
 
     private final ParserBuilder<P> parserBuilder;
 
-    private final Transformations<TokenTransformation> parentRuleTransformations;
-
     public Antlr4StringTransformer(ParserBuilder<P> parserBuilder) {
 
-        this(parserBuilder, EMPTY_TRANSFORMATIONS);
-    }
-
-    /**
-     * The {@code parentRuleTransformations} should contain any transformations that should
-     * be run for the parent rule of a terminal token.
-     */
-    public Antlr4StringTransformer(ParserBuilder<P> parserBuilder,
-                                   Transformations<TokenTransformation> parentRuleTransformations) {
-
-        assertIsNotNull(argumentIsNullMessage("parentRuleTransformations"), parentRuleTransformations);
+        assertIsNotNull(argumentIsNullMessage("parserBuilder"), parserBuilder);
 
         log.debug("{} created.", Antlr4StringTransformer.class.getSimpleName());
 
         this.parserBuilder = parserBuilder;
-        this.parentRuleTransformations = parentRuleTransformations;
     }
 
     @Override
@@ -56,7 +42,7 @@ public class Antlr4StringTransformer<P extends Recognizer> implements StringTran
         final ParseTree result = parserBuilder.parse(parser);
 
         final ParseTreeListener listener = new TransformingParseTreeListener(parser, transformations,
-                parentRuleTransformations, new InPlaceModifiableString(source));
+                new InPlaceModifiableString(source));
 
         log.debug("Begin walking the parse tree.");
         final ParseTreeWalker walker = new ParseTreeWalker();

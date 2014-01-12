@@ -14,55 +14,45 @@ import shiver.me.timbers.transform.Transformations;
 import shiver.me.timbers.transform.antlr4.InPlaceModifiableString;
 import shiver.me.timbers.transform.antlr4.TokenTransformation;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static shiver.me.timbers.asserts.Asserts.argumentIsNullMessage;
 import static shiver.me.timbers.asserts.Asserts.assertIsNotNull;
-import static shiver.me.timbers.transform.antlr4.IterableTokenTransformations.EMPTY_TRANSFORMATIONS;
 
 /**
  * This parse tree listener will apply any supplied transformations to related tokens exposed in the listener methods.
  */
 public class TransformingParseTreeListener implements ParseTreeListener {
 
+    public static final String EOF = "EOF";
+
     private final Logger log = LoggerFactory.getLogger(TransformingParseTreeListener.class);
 
     private final Recognizer recognizer;
     private final Transformations<TokenTransformation> transformations;
-    private Transformations<TokenTransformation> parentRuleTransformations;
     private final InPlaceModifiableString inPlaceModifiableString;
 
     private TokenStrings tokenStrings;
 
-    public TransformingParseTreeListener(Recognizer recognizer, Transformations<TokenTransformation> transformations,
-                                         InPlaceModifiableString inPlaceModifiableString) {
+    private final Set<String> ruleTokens;
 
-        this(recognizer, transformations, EMPTY_TRANSFORMATIONS, inPlaceModifiableString);
-    }
-
-    /**
-     * The {@code parentRuleTransformations} argument in this constructor should contain any transformations that should
-     * be run for the parent rule of a terminal token. That is when a token is passed to
-     * {@link #visitTerminal(TerminalNode)} it's parent rules name will be passed to the
-     * {@link Transformations#get(Object)} method of the {@code parentRuleTransformations} and the resulting
-     * transformation will be applied to that token.
-     */
     public TransformingParseTreeListener(Recognizer recognizer, Transformations<TokenTransformation> transformations,
-                                         Transformations<TokenTransformation> parentRuleTransformations,
                                          InPlaceModifiableString inPlaceModifiableString) {
 
         log.debug("{} created.", TransformingParseTreeListener.class.getSimpleName());
 
         assertIsNotNull(argumentIsNullMessage("recognizer"), recognizer);
         assertIsNotNull(argumentIsNullMessage("transformations"), transformations);
-        assertIsNotNull(argumentIsNullMessage("parentRuleTransformations"),
-                parentRuleTransformations);
         assertIsNotNull(argumentIsNullMessage("inPlaceModifiableString"), inPlaceModifiableString);
 
         this.recognizer = recognizer;
         this.transformations = transformations;
-        this.parentRuleTransformations = parentRuleTransformations;
         this.inPlaceModifiableString = inPlaceModifiableString;
 
         this.tokenStrings = new TokenStrings();
+
+        this.ruleTokens = new HashSet<String>();
     }
 
     @Override
@@ -72,11 +62,19 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
         final Token token = node.getSymbol();
 
-        log.debug("\"{}\" terminal node visited.", token.getText());
+        final String tokenName = getTokenName(token.getType());
 
-        transformToken(transformations, context, token);
+        final String ruleName = getRuleName(context.getRuleIndex());
 
-        transformRule(parentRuleTransformations, context, token);
+        log.debug("Terminal node visited for \"{}\" token with rule \"{}\" and value \"{}\".",
+                tokenName, ruleName, token.getText());
+
+        transformString(transformations, tokenName, context, token);
+
+        if (ruleNotApplied(token)) {
+
+            transformString(transformations, ruleName, context, token);
+        }
     }
 
     @Override
@@ -86,9 +84,11 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
         final Token token = node.getSymbol();
 
-        log.debug("\"{}\" error node visited.", token.getText());
+        final String tokenName = getTokenName(token.getType());
 
-        transformToken(transformations, context, token);
+        log.debug("Error node visited for \"{}\" token with value \"{}\".", tokenName, token.getText());
+
+        transformString(transformations, tokenName, context, token);
     }
 
     @Override
@@ -96,25 +96,22 @@ public class TransformingParseTreeListener implements ParseTreeListener {
 
         final Token token = context.getStart();
 
-        log.debug("Rule visited for \"{}\".", token.getText());
+        final String ruleName = getRuleName(context.getRuleIndex());
 
-        transformRule(transformations, context, token);
+        log.debug("\"{}\" rule visited for \"{}\".", ruleName, token.getText());
+
+        transformString(transformations, ruleName, context, token);
+
+        registerAppliedRule(token);
     }
 
     @Override
     public void exitEveryRule(@NotNull ParserRuleContext context) {
     }
 
-    private void transformRule(Transformations<TokenTransformation> transformations, RuleContext context, Token token) {
+    private String getTokenName(int type) {
 
-        if (isValidTokenType(token)) {
-
-            final String ruleName = getRuleName(context.getRuleIndex());
-
-            log.debug("Transforming rule \"{}\".", ruleName);
-
-            transformString(transformations, ruleName, context, token);
-        }
+        return Recognizer.EOF == type ? EOF : recognizer.getTokenNames()[type];
     }
 
     private String getRuleName(int rule) {
@@ -122,42 +119,38 @@ public class TransformingParseTreeListener implements ParseTreeListener {
         return recognizer.getRuleNames()[rule];
     }
 
-    private void transformToken(Transformations<TokenTransformation> transformations, RuleContext context, Token token) {
+    private boolean ruleNotApplied(Token token) {
 
-        if (isValidTokenType(token)) {
+        return !ruleTokens.contains(token.getText());
+    }
 
-            final String tokenName = getTokenName(token.getType());
+    private void registerAppliedRule(Token token) {
 
-            log.debug("Transforming token \"{}\".", tokenName);
-
-            transformString(transformations, tokenName, context, token);
-        }
+        ruleTokens.add(token.getText());
     }
 
     private void transformString(Transformations<TokenTransformation> transformations, String name, RuleContext context,
                                  Token token) {
 
-        final TokenTransformation transformation = transformations.get(name);
+        if (isValidTokenType(token)) {
 
-        log.debug("Transformation \"{}\" found for token \"{}\".", transformation.getName(), token.getText());
+            final TokenTransformation transformation = transformations.get(name);
 
-        final String currentTokenString = tokenStrings.get(token);
+            log.debug("Transformation \"{}\" found for token \"{}\".", transformation.getName(), token.getText());
 
-        final String transformedString = transformation.apply(context, token, currentTokenString);
+            final String currentTokenString = tokenStrings.get(token);
 
-        inPlaceModifiableString.setSubstring(transformedString, token.getStartIndex(), token.getStopIndex());
+            final String transformedString = transformation.apply(context, token, currentTokenString);
 
-        tokenStrings.set(token, transformedString);
+            inPlaceModifiableString.setSubstring(transformedString, token.getStartIndex(), token.getStopIndex());
+
+            tokenStrings.set(token, transformedString);
+        }
     }
 
     private boolean isValidTokenType(Token token) {
 
         return 0 <= token.getType();
-    }
-
-    private String getTokenName(int type) {
-
-        return recognizer.getTokenNames()[type];
     }
 
     @Override

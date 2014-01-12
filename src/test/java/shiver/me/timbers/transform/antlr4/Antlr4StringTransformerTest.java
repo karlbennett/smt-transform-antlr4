@@ -33,20 +33,13 @@ public class Antlr4StringTransformerTest {
     }
 
     @Test
-    public void testCreateWithParserBuilderAndParentRuleTransformations() {
-
-        new Antlr4StringTransformer<Recognizer>(mockParserBuilder(), mockTransformations());
-    }
-
-    @Test
     public void testTransform() {
 
         final Transformations<TokenTransformation> transformations = mockTransformations();
 
         final ParserBuilder<Recognizer> parserBuilder = mockParserBuilder(transformations);
 
-        new Antlr4StringTransformer<Recognizer>(parserBuilder, transformations)
-                .transform(TEST_STRING, transformations);
+        new Antlr4StringTransformer<Recognizer>(parserBuilder).transform(TEST_STRING, transformations);
 
         verify(transformations, times(1)).get(TEST_TOKEN_NAME);
         verify(transformations, times(1)).get(TEST_RULE_NAME);

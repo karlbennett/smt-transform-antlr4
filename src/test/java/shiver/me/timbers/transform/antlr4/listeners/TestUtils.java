@@ -33,6 +33,12 @@ public final class TestUtils {
     public static final ParserRuleContext TEST_RULE_CONTEXT_TWO = mockParserRuleContext(TEST_RULE_TYPE_TWO,
             TEST_TOKEN_TWO);
 
+    public static final ErrorNode TEST_ERROR_NODE_ONE = mockErrorNodeWithDefaultToken();
+    public static final ErrorNode TEST_ERROR_NODE_TWO = mockErrorNode(TEST_RULE_CONTEXT_TWO, TEST_TOKEN_TWO);
+
+    public static final TerminalNode TEST_TERMINAL_NODE_ONE = TEST_ERROR_NODE_ONE;
+    public static final TerminalNode TEST_TERMINAL_NODE_TWO = TEST_ERROR_NODE_TWO;
+
 
     public static Token mockToken(int type, String name) {
 
@@ -53,11 +59,6 @@ public final class TestUtils {
         when(recognizer.getRuleNames()).thenReturn(new String[]{TEST_RULE_NAME_ONE, TEST_RULE_NAME_TWO});
 
         return recognizer;
-    }
-
-    public static TerminalNode mockTerminalNodeWithDefaultToken() {
-
-        return mockTerminalNode(TEST_RULE_CONTEXT_ONE, TEST_TOKEN_ONE);
     }
 
     public static TerminalNode mockTerminalNode(RuleContext context, Token token) {
