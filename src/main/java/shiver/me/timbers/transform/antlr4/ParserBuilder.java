@@ -1,6 +1,6 @@
 package shiver.me.timbers.transform.antlr4;
 
-import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.tree.ParseTree;
 import shiver.me.timbers.transform.Transformations;
 
@@ -8,7 +8,7 @@ import shiver.me.timbers.transform.Transformations;
  * This interface should be implemented with the complete instantiation and configuration of the language specific
  * parser.
  */
-public interface ParserBuilder<P extends Recognizer> {
+public interface ParserBuilder<P extends Parser> {
 
     /**
      * @param source               the source code that will be parsed.

@@ -34,6 +34,11 @@ public class InPlaceModifiableString implements CharSequence {
      */
     public void setSubstring(String string, int startIndex, int stopIndex) {
 
+        if (isPreviousWord(getCurrentStartIndex(), startIndex)) {
+
+            return;
+        }
+
         if (isNewWord(getCurrentStartIndex(), startIndex)) {
 
             updatePresets(startIndex, stopIndex);
@@ -46,6 +51,11 @@ public class InPlaceModifiableString implements CharSequence {
         insertSubStingInToMainString(getActualStartIndex(), getActualStopIndex(), string);
 
         updateCurrentOffset(getOriginalSubString().length(), string.length());
+    }
+
+    private boolean isPreviousWord(int currentStartIndex, int startIndex) {
+
+        return currentStartIndex > startIndex;
     }
 
     private void updatePresets(int startIndex, int stopIndex) {

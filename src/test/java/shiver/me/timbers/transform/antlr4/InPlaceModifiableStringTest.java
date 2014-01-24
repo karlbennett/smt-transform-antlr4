@@ -336,6 +336,19 @@ public class InPlaceModifiableStringTest {
                 inPlaceModifiableString.toString());
     }
 
+    @Test
+    public void testTransformSubstringWithTransformationsWithPreviousNumber() {
+
+        inPlaceModifiableString.setSubstring("1", ONE_START_INDEX, ONE_STOP_INDEX);
+        inPlaceModifiableString.setSubstring("2", TWO_START_INDEX, TWO_STOP_INDEX);
+        inPlaceModifiableString.setSubstring("3", THREE_START_INDEX, THREE_STOP_INDEX);
+        inPlaceModifiableString.setSubstring("this should not be applied", TWO_START_INDEX, TWO_STOP_INDEX);
+        inPlaceModifiableString.setSubstring("4", FOUR_START_INDEX, FOUR_STOP_INDEX);
+
+        assertEquals("the transformed string should be correct.", "1 2 3 4 five six seven eight nine ten",
+                inPlaceModifiableString.toString());
+    }
+
     @Test(expected = NullPointerException.class)
     public void testTransformSubstringWithNullTransformation() {
 
